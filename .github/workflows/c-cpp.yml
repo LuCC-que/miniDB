@@ -22,7 +22,7 @@ jobs:
     - name: build directory
       run: mkdir build && cd build
     - name: where I am ?
-      run: ehco $(pwd)
+      run: echo $(pwd)
     - name: cmake set up
       run: cmake ../src/
     - name: make
