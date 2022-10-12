@@ -6,9 +6,11 @@
 
 #include "InputBuffer.h"
 #include "SQL.h"
+#include "table.h"
 void print_prompt() { printf("miniDB << "); }
 
 int main(int argc, char* argv[]) {
+    Table* table = new_table();
     InputBuffer* input_buffer = new_input_buffer();
     while (true) {
         print_prompt();
@@ -34,7 +36,13 @@ int main(int argc, char* argv[]) {
                 continue;
         }
 
-        execute_statement(&statement);
-        printf("Executed.\n");
+        switch (execute_statement(&statement, table)) {
+            case (EXECUTE_SUCCESS):
+                printf("Executed.\n");
+                break;
+            case (EXECUTE_TABLE_FULL):
+                printf("Error: Table full.\n");
+                break;
+        }
     }
 }
