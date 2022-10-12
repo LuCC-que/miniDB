@@ -20,7 +20,9 @@ jobs:
 #     - name: configure
 #       run: ./configure
     - name: build directory
-      run: mkdir build && cd build
+      run: mkdir build
+    - name: cd into build
+      run: cd ./build
     - name: where I am ?
       run: echo $(pwd)
     - name: cmake set up
