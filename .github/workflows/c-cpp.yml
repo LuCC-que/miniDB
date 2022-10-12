@@ -21,8 +21,10 @@ jobs:
 #       run: ./configure
     - name: build directory
       run: mkdir build && cd build
+    - name: where I am ?
+      run: ehco $(pwd)
     - name: cmake set up
-      run: cmake ../src
+      run: cmake ../src/
     - name: make
       run: make
 #     - name: make check
