@@ -27,3 +27,6 @@ jobs:
     - name: make
       working-directory: ./build
       run: make
+    - name: run the tests
+      working-directory: ./build
+      run: ctest --verbose
