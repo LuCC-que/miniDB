@@ -14,12 +14,8 @@ void execute_a_command(InputBuffer* input_buffer,
                        Table* table,
                        Statement* statement,
                        std::vector<std::string>& collector) {
-    std::cout << "where you stack?\n";
-
     print_prompt();
-    std::cout << "what is the statement?\n"
-              << input_buffer->buffer
-              << std::endl;
+    std::cout << input_buffer->buffer << "sad" << std::endl;
 
     if (input_buffer->buffer[0] == '.') {
         switch (do_meta_command(input_buffer)) {
@@ -31,51 +27,73 @@ void execute_a_command(InputBuffer* input_buffer,
         }
     }
 
-    std::cout << "where" << std::endl;
     switch (prepare_statement(input_buffer, statement)) {
         case (PREPARE_SUCCESS):
             break;
+        case (PREPARE_STRING_TOO_LONG):
+            printf("miniDB >> String is too long.\n");
+            break;
+        case (PREPARE_NEGATIVE_ID):
+            printf("miniDB >> ID must be positive.\n");
+            break;
         case (PREPARE_UNRECOGNIZED_STATEMENT):
-            printf("Unrecognized keyword at start of '%s'.\n",
+            printf("miniDB >> Unrecognized keyword at start of '%s'.\n",
                    input_buffer->buffer);
             break;
     }
 
-    std::cout << "where 2" << std::endl;
     switch (execute_statement(statement, table)) {
         case (EXECUTE_SUCCESS):
-            printf("Executed.\n");
             break;
+
         case (EXECUTE_TABLE_FULL):
-            printf("Error: Table full.\n");
+            printf("miniDB >> Error: Table full.\n");
             break;
     }
 }
 
-int main() {
-    std::vector<std::string> scripts{
-        "insert 1 user1 person1@example.com",
-        "select",
-        ".exit",
-    };
-
+void test_commands_executor(std::vector<std::string>& scripts, uint16_t repreat) {
     std::vector<std::string> collector;
 
     Table* table = new_table();
     Statement statement;
     InputBuffer* ib = new_input_buffer();
-    for (std::string& script : scripts) {
-        ib->buffer = (char*)script.c_str();
-        ib->buffer_length = script.length();
-        ib->input_length = script.length();
 
-        execute_a_command(ib, table, &statement, collector);
+    while (repreat--) {
+        for (std::string script : scripts) {
+            ib->buffer = (char*)script.c_str();
+            ib->buffer_length = script.length();
+            ib->input_length = script.length();
+
+            execute_a_command(ib, table, &statement, collector);
+        }
     }
 
-    for (std::string& output : collector) {
-        std::cout << output << std::endl;
-    }
+    // close_input_buffer(ib);
+    free_table(table);
+}
 
-    close_input_buffer(ib);
+int main() {
+    // test 1 insertion
+
+    std::vector<std::string> scripts1{
+        "insert 1 user1 person1@example.com",
+        "select",
+    };
+
+    // // test 1000 insertion
+    std::vector<std::string> scripts2{
+        "insert 1 user1 person1@example.com",
+    };
+
+    // test negative ID
+    std::vector<std::string> scripts3{
+        "insert -1 user1 person1@example.com",
+    };
+
+    test_commands_executor(scripts1, 1);
+    test_commands_executor(scripts2, 10);
+    test_commands_executor(scripts3, 1);
+
     return 0;
 }

@@ -1,20 +1,16 @@
-#include <iostream>
-#include <string>
-#include <vector>
+#include "./include/test_harness.h"
 
-#include "InputBuffer.h"
-#include "SQL.h"
-#include "table.h"
+#include "../frontend/include/SQL.h"
+#include "../frontend/include/table.h"
+#include "../utils/include/InputBuffer.h"
 
 void print_prompt() { printf("miniDB << "); }
 
-void execute_a_command(InputBuffer* input_buffer, Table* table) {
-    std::cout << "where you stack?\n";
-
+void execute_a_command(InputBuffer* input_buffer,
+                       Table* table,
+                       Statement* statement,
+                       std::vector<std::string>& collector) {
     print_prompt();
-    std::cout << "what is the statement?\n"
-              << input_buffer->buffer
-              << std::endl;
 
     if (input_buffer->buffer[0] == '.') {
         switch (do_meta_command(input_buffer)) {
@@ -26,8 +22,7 @@ void execute_a_command(InputBuffer* input_buffer, Table* table) {
         }
     }
 
-    Statement statement;
-    switch (prepare_statement(input_buffer, &statement)) {
+    switch (prepare_statement(input_buffer, statement)) {
         case (PREPARE_SUCCESS):
             break;
         case (PREPARE_UNRECOGNIZED_STATEMENT):
@@ -36,7 +31,7 @@ void execute_a_command(InputBuffer* input_buffer, Table* table) {
             break;
     }
 
-    switch (execute_statement(&statement, table)) {
+    switch (execute_statement(statement, table)) {
         case (EXECUTE_SUCCESS):
             printf("Executed.\n");
             break;
