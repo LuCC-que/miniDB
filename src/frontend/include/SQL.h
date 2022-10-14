@@ -37,12 +37,12 @@ typedef enum {
     EXECUTE_TABLE_FULL
 } ExecuteResult;
 
-MetaCommandResult do_meta_command(InputBuffer* input_buffer);
+MetaCommandResult do_meta_command(const InputBuffer& input_buffer);
 
-PrepareResult prepare_statement(InputBuffer* input_buffer,
+PrepareResult prepare_statement(const InputBuffer& input_buffer,
                                 Statement* statement);
 
-PrepareResult prepare_insert(InputBuffer* input_buffer,
+PrepareResult prepare_insert(InputBuffer& input_buffer,
                              Statement* statement);
 
 ExecuteResult execute_insert(Statement* statement,

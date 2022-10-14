@@ -4,27 +4,29 @@
 #include "SQL.h"
 #include "table.h"
 
-MetaCommandResult do_meta_command(InputBuffer* input_buffer) {
-    if (strcmp(input_buffer->buffer, ".exit") == 0) {
+MetaCommandResult do_meta_command(const InputBuffer& input_buffer) {
+    if (input_buffer == ".exit") {
         exit(EXIT_SUCCESS);
     } else {
         return META_COMMAND_UNRECOGNIZED_COMMAND;
     }
 }
 
-PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
+PrepareResult prepare_insert(const InputBuffer& input_buffer, Statement* statement) {
     statement->type = STATEMENT_INSERT;
 
-    char* keyword = strtok(input_buffer->buffer, " ");
+    char* temp = (char*)input_buffer.buffer.c_str();
+    char* keyword = strtok(temp, " ");
     char* id_string = strtok(NULL, " ");
     char* username = strtok(NULL, " ");
     char* email = strtok(NULL, " ");
 
-    // std::cout << keyword
-    //           << id_string
-    //           << username
-    //           << email
-    //           << std::endl;
+    puts("check the parser: ");
+    std::cout << keyword
+              << id_string
+              << username
+              << email
+              << std::endl;
 
     if (id_string == NULL || username == NULL || email == NULL) {
         return PREPARE_SYNTAX_ERROR;
@@ -49,13 +51,13 @@ PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
     return PREPARE_SUCCESS;
 }
 
-PrepareResult prepare_statement(InputBuffer* input_buffer,
+PrepareResult prepare_statement(const InputBuffer& input_buffer,
                                 Statement* statement) {
-    if (strncmp(input_buffer->buffer, "insert", 6) == 0) {
+    if (input_buffer == "insert") {
         // save the data to statement
         return prepare_insert(input_buffer, statement);
     }
-    if (strcmp(input_buffer->buffer, "select") == 0) {
+    if (input_buffer == "select") {
         statement->type = STATEMENT_SELECT;
         return PREPARE_SUCCESS;
     }
@@ -86,7 +88,7 @@ ExecuteResult execute_select(Statement* statement, Table* table) {
 }
 
 ExecuteResult execute_statement(Statement* statement, Table* table) {
-        switch (statement->type) {
+    switch (statement->type) {
         case (STATEMENT_INSERT):
             return execute_insert(statement, table);
         case (STATEMENT_SELECT):

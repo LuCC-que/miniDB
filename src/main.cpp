@@ -6,22 +6,26 @@
 
 #include "InputBuffer.h"
 #include "SQL.h"
-#include "table.h"
+
 void print_prompt() { printf("miniDB << "); }
 
 int main(int argc, char* argv[]) {
     Table* table = new_table();
-    InputBuffer* input_buffer = new_input_buffer();
     while (true) {
-        print_prompt();
-        read_input(input_buffer);
+        PROMPT;
+        InputBuffer input_buffer{};
+        input_buffer.read_input();
+        // std::cout << input_buffer << std::endl;
 
-        if (input_buffer->buffer[0] == '.') {
+        if (input_buffer.buffer[0] == '.') {
             switch (do_meta_command(input_buffer)) {
                 case (META_COMMAND_SUCCESS):
                     continue;
                 case (META_COMMAND_UNRECOGNIZED_COMMAND):
-                    printf("Unrecognized command '%s'\n", input_buffer->buffer);
+                    OUTPUT
+                        << "Unreconized command: "
+                        << input_buffer
+                        << std::endl;
                     continue;
             }
         }
@@ -31,23 +35,33 @@ int main(int argc, char* argv[]) {
             case (PREPARE_SUCCESS):
                 break;
             case (PREPARE_STRING_TOO_LONG):
-                printf("String is too long.\n");
+                OUTPUT
+                    << "String is too long"
+                    << std::endl;
                 continue;
             case (PREPARE_NEGATIVE_ID):
-                printf("ID must be positive. \n");
+                OUTPUT
+                    << "ID must be positive."
+                    << std::endl;
                 continue;
             case (PREPARE_UNRECOGNIZED_STATEMENT):
-                printf("Unrecognized keyword at start of '%s'.\n",
-                       input_buffer->buffer);
+                OUTPUT
+                    << "Unrecognized command at start of: "
+                    << input_buffer
+                    << std::endl;
                 continue;
         }
 
         switch (execute_statement(&statement, table)) {
             case (EXECUTE_SUCCESS):
-                printf("Executed.\n");
+                OUTPUT
+                    << "Executed."
+                    << std::endl;
                 break;
             case (EXECUTE_TABLE_FULL):
-                printf("Error: Table full.\n");
+                OUTPUT
+                    << "Error: Table full."
+                    << std::endl;
                 break;
         }
     }

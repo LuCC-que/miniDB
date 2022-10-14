@@ -6,23 +6,26 @@
 
 #include "InputBuffer.h"
 #include "SQL.h"
-#include "table.h"
+// #include "table.h"
 
 void print_prompt() { printf("miniDB << "); }
 
-void execute_a_command(InputBuffer* input_buffer,
+void execute_a_command(InputBuffer input_buffer,
                        Table* table,
                        Statement* statement,
                        std::vector<std::string>& collector) {
     print_prompt();
-    std::cout << input_buffer->buffer << "sad" << std::endl;
+    std::cout << input_buffer << std::endl;
 
-    if (input_buffer->buffer[0] == '.') {
+    if (input_buffer.buffer[0] == '.') {
         switch (do_meta_command(input_buffer)) {
             case (META_COMMAND_SUCCESS):
                 break;
             case (META_COMMAND_UNRECOGNIZED_COMMAND):
-                printf("Unrecognized command '%s'\n", input_buffer->buffer);
+                OUTPUT
+                    << "Unreconized command: "
+                    << input_buffer
+                    << std::endl;
                 break;
         }
     }
@@ -31,23 +34,33 @@ void execute_a_command(InputBuffer* input_buffer,
         case (PREPARE_SUCCESS):
             break;
         case (PREPARE_STRING_TOO_LONG):
-            printf("miniDB >> String is too long.\n");
+            OUTPUT
+                << "String is too long"
+                << std::endl;
             break;
         case (PREPARE_NEGATIVE_ID):
-            printf("miniDB >> ID must be positive.\n");
+            OUTPUT
+                << "ID must be positive."
+                << std::endl;
             break;
         case (PREPARE_UNRECOGNIZED_STATEMENT):
-            printf("miniDB >> Unrecognized keyword at start of '%s'.\n",
-                   input_buffer->buffer);
+            OUTPUT
+                << "Unrecognized command at start of: "
+                << input_buffer
+                << std::endl;
             break;
     }
 
     switch (execute_statement(statement, table)) {
         case (EXECUTE_SUCCESS):
+            OUTPUT
+                << "Executed."
+                << std::endl;
             break;
-
         case (EXECUTE_TABLE_FULL):
-            printf("miniDB >> Error: Table full.\n");
+            OUTPUT
+                << "Error: Table full."
+                << std::endl;
             break;
     }
 }
@@ -57,13 +70,10 @@ void test_commands_executor(std::vector<std::string>& scripts, uint16_t repreat)
 
     Table* table = new_table();
     Statement statement;
-    InputBuffer* ib = new_input_buffer();
 
     while (repreat--) {
         for (std::string script : scripts) {
-            ib->buffer = (char*)script.c_str();
-            ib->buffer_length = script.length();
-            ib->input_length = script.length();
+            InputBuffer ib(script);
 
             execute_a_command(ib, table, &statement, collector);
         }
