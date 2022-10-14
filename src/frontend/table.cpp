@@ -33,13 +33,6 @@ Table* db_open(const char* filename) {
     return table;
 }
 
-// void free_table(Table* table) {
-//     for (int i = 0; table->pages[i]; i++) {
-//         free(table->pages[i]);
-//     }
-//     free(table);
-// }
-
 void* get_page(Pager* pager, uint32_t page_num) {
     if (page_num > TABLE_MAX_PAGES) {
         printf("Tried to fetch page number out of bounds. %d > %d\n", page_num,
