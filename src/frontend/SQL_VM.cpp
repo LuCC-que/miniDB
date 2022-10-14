@@ -7,6 +7,7 @@
 MetaCommandResult do_meta_command(const InputBuffer& input_buffer, const Table& table) {
     if (input_buffer == ".exit") {
         table.~Table();
+        input_buffer.~InputBuffer();
         exit(EXIT_SUCCESS);
     } else {
         return META_COMMAND_UNRECOGNIZED_COMMAND;
@@ -60,24 +61,33 @@ PrepareResult prepare_statement(const InputBuffer& input_buffer,
 }
 
 ExecuteResult execute_insert(Statement* statement, Table& table) {
+    Cursor end_cursor(&table, true);
     if (table.num_rows >= TABLE_MAX_ROWS) {
         return EXECUTE_TABLE_FULL;
     }
 
     Row* row_to_insert = &(statement->row_to_insert);
 
-    serialize_row(row_to_insert, table.row_slot(table.num_rows));
+    serialize_row(row_to_insert, end_cursor.cursor_value());
     table.num_rows += 1;
 
     return EXECUTE_SUCCESS;
 }
 
 ExecuteResult execute_select(Statement* statement, Table& table) {
+    Cursor start_cursor(&table);
     Row row;
-    for (uint32_t i = 0; i < table.num_rows; i++) {
-        deserialize_row(table.row_slot(i), &row);
+
+    while (!(start_cursor.end_of_table)) {
+        deserialize_row(start_cursor.cursor_value(), &row);
         print_row(&row);
+        start_cursor.cursor_advance();
     }
+
+    // for (uint32_t i = 0; i < table.num_rows; i++) {
+    //     deserialize_row(table.cursor_value(start_cursor), &row);
+    //     print_row(&row);
+    // }
     return EXECUTE_SUCCESS;
 }
 

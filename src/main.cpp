@@ -6,6 +6,7 @@
 
 #include "InputBuffer.h"
 #include "SQL.h"
+#include "table.h"
 
 void print_prompt() { printf("miniDB << "); }
 
