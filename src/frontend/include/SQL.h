@@ -39,7 +39,7 @@ typedef struct {
 } Statement;
 
 MetaCommandResult do_meta_command(const InputBuffer& input_buffer,
-                                  Table* table);
+                                  const Table& table);
 
 PrepareResult prepare_statement(const InputBuffer& input_buffer,
                                 Statement* statement);
@@ -48,12 +48,12 @@ PrepareResult prepare_insert(InputBuffer& input_buffer,
                              Statement* statement);
 
 ExecuteResult execute_insert(Statement* statement,
-                             Table* table);
+                             Table& table);
 
 ExecuteResult execute_select(Statement* statement,
-                             Table* table);
+                             Table& table);
 
 ExecuteResult execute_statement(Statement* statement,
-                                Table* table);
+                                Table& table);
 
 #endif

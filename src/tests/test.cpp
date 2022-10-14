@@ -8,17 +8,19 @@
 #include "SQL.h"
 // #include "table.h"
 
+#define DB_FILE "./new.db"
+
 void print_prompt() { printf("miniDB << "); }
 
 void execute_a_command(InputBuffer input_buffer,
-                       Table* table,
+                       Table& table,
                        Statement* statement,
                        std::vector<std::string>& collector) {
     print_prompt();
     std::cout << input_buffer << std::endl;
 
     if (input_buffer.buffer[0] == '.') {
-        switch (do_meta_command(input_buffer)) {
+        switch (do_meta_command(input_buffer, table)) {
             case (META_COMMAND_SUCCESS):
                 break;
             case (META_COMMAND_UNRECOGNIZED_COMMAND):
@@ -68,7 +70,7 @@ void execute_a_command(InputBuffer input_buffer,
 void test_commands_executor(std::vector<std::string>& scripts, uint16_t repreat) {
     std::vector<std::string> collector;
 
-    Table* table = new_table();
+    Table table(DB_FILE);
     Statement statement;
 
     while (repreat--) {
@@ -80,7 +82,6 @@ void test_commands_executor(std::vector<std::string>& scripts, uint16_t repreat)
     }
 
     // close_input_buffer(ib);
-    free_table(table);
 }
 
 int main() {

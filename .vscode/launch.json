@@ -7,6 +7,16 @@
       "program": "${workspaceFolder}/build/tests",
       "args": [],
       "cwd": "${workspaceFolder}",
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "main test",
+      "program": "${workspaceFolder}/build/miniDB",
+      "args": [
+        "new.db"
+      ],
+      "cwd": "${workspaceFolder}",
     }
   ]
 }
