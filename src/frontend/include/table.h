@@ -6,8 +6,6 @@
 #include <cstring>
 #include <iostream>
 
-#include "Cursor.h"
-
 #define COLUMN_USERNAME_SIZE 32
 #define COLUMN_EMAIL_SIZE 255
 #define TABLE_MAX_PAGES 100
@@ -126,28 +124,6 @@ struct Table {
     }
 
     void* get_page(uint32_t page_num);
-};
-
-struct Cursor {
-    Table* table;  // replace this by copy constructor
-    uint32_t row_num;
-    bool end_of_table;
-
-    // copy table.. table_end
-    Cursor(Table* t, const bool end)
-        : table(t), row_num(t->num_rows), end_of_table(end) {
-    }
-
-    // table_start
-
-    Cursor(Table* t)
-        : table(t),
-          row_num(0),
-          end_of_table(t->num_rows == 0) {}
-
-    void cursor_advance();
-
-    void* cursor_value();
 };
 
 void serialize_row(Row* source, void* destination);
