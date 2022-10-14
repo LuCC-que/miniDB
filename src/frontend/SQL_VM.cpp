@@ -4,8 +4,9 @@
 #include "SQL.h"
 #include "table.h"
 
-MetaCommandResult do_meta_command(const InputBuffer& input_buffer) {
+MetaCommandResult do_meta_command(const InputBuffer& input_buffer, Table* table) {
     if (input_buffer == ".exit") {
+        db_close(table);
         exit(EXIT_SUCCESS);
     } else {
         return META_COMMAND_UNRECOGNIZED_COMMAND;
@@ -20,13 +21,6 @@ PrepareResult prepare_insert(const InputBuffer& input_buffer, Statement* stateme
     char* id_string = strtok(NULL, " ");
     char* username = strtok(NULL, " ");
     char* email = strtok(NULL, " ");
-
-    puts("check the parser: ");
-    std::cout << keyword
-              << id_string
-              << username
-              << email
-              << std::endl;
 
     if (id_string == NULL || username == NULL || email == NULL) {
         return PREPARE_SYNTAX_ERROR;

@@ -20,7 +20,7 @@ add_executable(miniDB main.cpp)
 
 target_link_libraries(miniDB PRIVATE utils frontend)
 
-enable_testing()
-add_executable(tests tests/test.cpp)
-target_link_libraries(tests PRIVATE frontend utils)
-add_test(Tester tests)
+# enable_testing()
+# add_executable(tests tests/test.cpp)
+# target_link_libraries(tests PRIVATE frontend utils)
+# add_test(Tester tests)

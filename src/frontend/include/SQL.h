@@ -23,21 +23,23 @@ typedef enum {
 } PrepareResult;
 
 typedef enum {
+    EXECUTE_SUCCESS,
+    EXECUTE_TABLE_FULL
+} ExecuteResult;
+
+typedef enum {
     STATEMENT_INSERT,
     STATEMENT_SELECT
 } StatementType;
 
+//====================== Statement======================
 typedef struct {
     StatementType type;
     Row row_to_insert;  // for insertion
 } Statement;
 
-typedef enum {
-    EXECUTE_SUCCESS,
-    EXECUTE_TABLE_FULL
-} ExecuteResult;
-
-MetaCommandResult do_meta_command(const InputBuffer& input_buffer);
+MetaCommandResult do_meta_command(const InputBuffer& input_buffer,
+                                  Table* table);
 
 PrepareResult prepare_statement(const InputBuffer& input_buffer,
                                 Statement* statement);

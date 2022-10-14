@@ -10,7 +10,13 @@
 void print_prompt() { printf("miniDB << "); }
 
 int main(int argc, char* argv[]) {
-    Table* table = new_table();
+    if (argc < 2) {
+        printf("Must supply a database filename.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char* filename = argv[1];
+    Table* table = db_open(filename);
     while (true) {
         PROMPT;
         InputBuffer input_buffer{};
@@ -18,7 +24,7 @@ int main(int argc, char* argv[]) {
         // std::cout << input_buffer << std::endl;
 
         if (input_buffer.buffer[0] == '.') {
-            switch (do_meta_command(input_buffer)) {
+            switch (do_meta_command(input_buffer, table)) {
                 case (META_COMMAND_SUCCESS):
                     continue;
                 case (META_COMMAND_UNRECOGNIZED_COMMAND):
