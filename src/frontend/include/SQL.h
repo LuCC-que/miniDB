@@ -39,7 +39,7 @@ typedef struct {
 } Statement;
 
 MetaCommandResult do_meta_command(const InputBuffer& input_buffer,
-                                  const Table& table);
+                                  Table& table);
 
 PrepareResult prepare_statement(const InputBuffer& input_buffer,
                                 Statement* statement);

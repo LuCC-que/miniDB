@@ -14,7 +14,7 @@
       "name": "main test",
       "program": "${workspaceFolder}/build/miniDB",
       "args": [
-        "new.db"
+        "new1.db"
       ],
       "cwd": "${workspaceFolder}",
     }

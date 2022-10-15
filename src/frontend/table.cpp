@@ -51,12 +51,16 @@ void* Table::get_page(uint32_t page_num) {
         }
 
         pager.pages[page_num] = page;
+
+        if (page_num >= pager.num_pages) {
+            pager.num_pages = page_num + 1;
+        }
     }
 
     return pager.pages[page_num];
 }
 
-void Pager::pager_flush(uint32_t page_num, uint32_t size) {
+void Pager::pager_flush(uint32_t page_num) {
     if (pages[page_num] == NULL) {
         std::cout
             << "Tried to flush null page"
@@ -76,9 +80,7 @@ void Pager::pager_flush(uint32_t page_num, uint32_t size) {
     }
 
     ssize_t bytes_written =
-        write(file_descriptor,
-              pages[page_num],
-              size);
+        write(file_descriptor, pages[page_num], PAGE_SIZE);
 
     std::cout << "miniDB >> writed into db" << std::endl;
 
