@@ -1,30 +1,39 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "Cursor.h"
 #include "SQL.h"
 #include "table.h"
-
-MetaCommandResult do_meta_command(InputBuffer* input_buffer) {
-    if (strcmp(input_buffer->buffer, ".exit") == 0) {
+MetaCommandResult do_meta_command(const InputBuffer& input_buffer,
+                                  Table& table) {
+    if (input_buffer == ".exit") {
+        table.~Table();
+        input_buffer.~InputBuffer();
         exit(EXIT_SUCCESS);
+
+    } else if (input_buffer == ".btree") {
+        std::cout << "Tree:" << std::endl;
+        print_tree(&table, 0, 0);
+        return META_COMMAND_SUCCESS;
+
+    } else if (input_buffer == ".constants") {
+        printf("Constants:\n");
+        print_constants();
+        return META_COMMAND_SUCCESS;
+
     } else {
         return META_COMMAND_UNRECOGNIZED_COMMAND;
     }
 }
 
-PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
+PrepareResult prepare_insert(const InputBuffer& input_buffer, Statement* statement) {
     statement->type = STATEMENT_INSERT;
 
-    char* keyword = strtok(input_buffer->buffer, " ");
+    char* temp = (char*)input_buffer.buffer.c_str();
+    char* keyword = strtok(temp, " ");
     char* id_string = strtok(NULL, " ");
     char* username = strtok(NULL, " ");
     char* email = strtok(NULL, " ");
-
-    // std::cout << keyword
-    //           << id_string
-    //           << username
-    //           << email
-    //           << std::endl;
 
     if (id_string == NULL || username == NULL || email == NULL) {
         return PREPARE_SYNTAX_ERROR;
@@ -49,13 +58,13 @@ PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
     return PREPARE_SUCCESS;
 }
 
-PrepareResult prepare_statement(InputBuffer* input_buffer,
+PrepareResult prepare_statement(const InputBuffer& input_buffer,
                                 Statement* statement) {
-    if (strncmp(input_buffer->buffer, "insert", 6) == 0) {
+    if (input_buffer == "insert") {
         // save the data to statement
         return prepare_insert(input_buffer, statement);
     }
-    if (strcmp(input_buffer->buffer, "select") == 0) {
+    if (input_buffer == "select") {
         statement->type = STATEMENT_SELECT;
         return PREPARE_SUCCESS;
     }
@@ -63,30 +72,37 @@ PrepareResult prepare_statement(InputBuffer* input_buffer,
     return PREPARE_UNRECOGNIZED_STATEMENT;
 }
 
-ExecuteResult execute_insert(Statement* statement, Table* table) {
-    if (table->num_rows >= TABLE_MAX_ROWS) {
-        return EXECUTE_TABLE_FULL;
-    }
+ExecuteResult execute_insert(Statement* statement, Table& table) {
+    void* node = table.get_page(table.root_page_num);
+    uint32_t num_cells = (*leaf_node_num_cells(node));
 
     Row* row_to_insert = &(statement->row_to_insert);
-
-    serialize_row(row_to_insert, row_slot(table, table->num_rows));
-    table->num_rows += 1;
-
+    uint32_t key_to_insert = row_to_insert->id;
+    Cursor cursor(&table, key_to_insert);
+    if (cursor.cell_num < num_cells) {
+        uint32_t key_at_index = *leaf_node_key(node, cursor.cell_num);
+        if (key_at_index == key_to_insert) {
+            return EXECUTE_DUPLICATE_KEY;
+        }
+    }
+    cursor.leaf_node_insert(row_to_insert->id, row_to_insert);
     return EXECUTE_SUCCESS;
 }
 
-ExecuteResult execute_select(Statement* statement, Table* table) {
+ExecuteResult execute_select(Statement* statement, Table& table) {
+    Cursor start_cursor(&table);
     Row row;
-    for (uint32_t i = 0; i < table->num_rows; i++) {
-        deserialize_row(row_slot(table, i), &row);
+
+    while (!(start_cursor.end_of_table)) {
+        deserialize_row(start_cursor.cursor_value(), &row);
         print_row(&row);
+        start_cursor.cursor_advance();
     }
     return EXECUTE_SUCCESS;
 }
 
-ExecuteResult execute_statement(Statement* statement, Table* table) {
-        switch (statement->type) {
+ExecuteResult execute_statement(Statement* statement, Table& table) {
+    switch (statement->type) {
         case (STATEMENT_INSERT):
             return execute_insert(statement, table);
         case (STATEMENT_SELECT):
