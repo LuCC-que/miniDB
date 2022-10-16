@@ -3,10 +3,6 @@
 #include "table.h"
 
 void Cursor::cursor_advance() {
-    // uint32_t right_page_num = page_num;
-    // if (!page_num) {
-    //     right_page_num = 1;
-    // }
     void* node = table->get_page(page_num);
     cell_num += 1;
     if (cell_num >= (*leaf_node_num_cells(node))) {
