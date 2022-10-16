@@ -65,6 +65,9 @@ int main(int argc, char* argv[]) {
                     << "Executed."
                     << std::endl;
                 break;
+            case (EXECUTE_DUPLICATE_KEY):
+                printf("Error: Duplicate key.\n");
+                break;
             case (EXECUTE_TABLE_FULL):
                 OUTPUT
                     << "Error: Table full."

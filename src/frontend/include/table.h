@@ -7,7 +7,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "../../backend/include/leafNode.h"
+#include "../../backend/include/internalNode.h"
 
 struct Pager {
     int file_descriptor;
@@ -80,6 +80,7 @@ struct Table {
             // New database file. Initialize page 0 as leaf node.
             void* root_node = get_page(0);
             initialize_leaf_node(root_node);
+            set_node_root(root_node, true);
         }
     }
 
@@ -102,5 +103,13 @@ void serialize_row(Row* source, void* destination);
 void deserialize_row(void* source, Row* destination);
 
 void print_row(Row* row);
+
+void print_constants();
+
+void indent(uint32_t level);
+
+void print_tree(Table* table,
+                uint32_t page_num,
+                uint32_t indentation_level);
 
 #endif

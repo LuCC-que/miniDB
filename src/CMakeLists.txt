@@ -13,16 +13,13 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 # set(CMAKE_CXX_FLAGS_RELEASE "-O")
 
-
+add_subdirectory(frontend)
 add_subdirectory(utils)
 add_subdirectory(backend)
-add_subdirectory(frontend)
-
-
 
 add_executable(miniDB main.cpp)
 
-target_link_libraries(miniDB PRIVATE utils backend frontend)
+target_link_libraries(miniDB PRIVATE frontend backend utils)
 
 # enable_testing()
 # add_executable(tests tests/test.cpp)

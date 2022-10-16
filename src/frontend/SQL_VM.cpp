@@ -1,28 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../backend/include/leafNode.h"
 #include "Cursor.h"
 #include "SQL.h"
-
-void print_constants() {
-    printf("ROW_SIZE: %d\n", ROW_SIZE);
-    printf("COMMON_NODE_HEADER_SIZE: %d\n", COMMON_NODE_HEADER_SIZE);
-    printf("LEAF_NODE_HEADER_SIZE: %d\n", LEAF_NODE_HEADER_SIZE);
-    printf("LEAF_NODE_CELL_SIZE: %d\n", LEAF_NODE_CELL_SIZE);
-    printf("LEAF_NODE_SPACE_FOR_CELLS: %d\n", LEAF_NODE_SPACE_FOR_CELLS);
-    printf("LEAF_NODE_MAX_CELLS: %d\n", LEAF_NODE_MAX_CELLS);
-}
-
-void print_leaf_node(void* node) {
-    uint32_t num_cells = *leaf_node_num_cells(node);
-    printf("leaf (size %d)\n", num_cells);
-    for (uint32_t i = 0; i < num_cells; i++) {
-        uint32_t key = *leaf_node_key(node, i);
-        printf("  - %d : %d\n", i, key);
-    }
-}
-
+#include "table.h"
 MetaCommandResult do_meta_command(const InputBuffer& input_buffer,
                                   Table& table) {
     if (input_buffer == ".exit") {
@@ -32,7 +13,7 @@ MetaCommandResult do_meta_command(const InputBuffer& input_buffer,
 
     } else if (input_buffer == ".btree") {
         std::cout << "Tree:" << std::endl;
-        print_leaf_node(table.get_page(0));
+        print_tree(&table, 0, 0);
         return META_COMMAND_SUCCESS;
 
     } else if (input_buffer == ".constants") {
@@ -93,15 +74,18 @@ PrepareResult prepare_statement(const InputBuffer& input_buffer,
 
 ExecuteResult execute_insert(Statement* statement, Table& table) {
     void* node = table.get_page(table.root_page_num);
-    if ((*leaf_node_num_cells(node) >= LEAF_NODE_MAX_CELLS)) {
-        return EXECUTE_TABLE_FULL;
-    }
+    uint32_t num_cells = (*leaf_node_num_cells(node));
 
-    // re-calculate the last row for every insertion
     Row* row_to_insert = &(statement->row_to_insert);
-    Cursor end_cursor(&table, true);
-    leaf_node_insert(end_cursor, row_to_insert->id, row_to_insert);
-
+    uint32_t key_to_insert = row_to_insert->id;
+    Cursor cursor(&table, key_to_insert);
+    if (cursor.cell_num < num_cells) {
+        uint32_t key_at_index = *leaf_node_key(node, cursor.cell_num);
+        if (key_at_index == key_to_insert) {
+            return EXECUTE_DUPLICATE_KEY;
+        }
+    }
+    cursor.leaf_node_insert(row_to_insert->id, row_to_insert);
     return EXECUTE_SUCCESS;
 }
 
@@ -114,11 +98,6 @@ ExecuteResult execute_select(Statement* statement, Table& table) {
         print_row(&row);
         start_cursor.cursor_advance();
     }
-
-    // for (uint32_t i = 0; i < table.num_rows; i++) {
-    //     deserialize_row(table.cursor_value(start_cursor), &row);
-    //     print_row(&row);
-    // }
     return EXECUTE_SUCCESS;
 }
 
